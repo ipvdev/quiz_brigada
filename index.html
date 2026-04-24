@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Brigada | Revisao Monstra</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400&family=Space+Mono:wght@400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-1: #08121a;
+        --bg-2: #132a38;
+        --bg-3: #1f3f52;
+        --line: #ffffff24;
+        --panel: #0f1e28cc;
+        --panel-border: #90e0ef44;
+        --text: #f2f7fb;
+        --muted: #c6d9e2;
+        --accent: #ffd166;
+        --ok: #7bd389;
+        --bad: #ff7f7f;
+        --action: #f25f5c;
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: "Chakra Petch", sans-serif;
+        font-weight: 400;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 15% 10%, #284b63 0%, transparent 35%),
+          radial-gradient(circle at 80% 20%, #f25f5c33 0%, transparent 28%),
+          linear-gradient(130deg, var(--bg-1), var(--bg-2) 50%, var(--bg-3));
+        display: grid;
+        place-items: center;
+        overflow-x: hidden;
+      }
+
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 26px 26px;
+        mask-image: radial-gradient(
+          circle at center,
+          #000 35%,
+          transparent 95%
+        );
+        pointer-events: none;
+      }
+
+      .app {
+        width: min(900px, 92vw);
+        padding: 20px 0 30px;
+      }
+
+      .hero {
+        margin-bottom: 16px;
+      }
+
+      .hero-kicker {
+        color: var(--accent);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.88rem;
+        margin: 0;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+        margin-top: 6px;
+      }
+
+      .hero-subtitle {
+        color: var(--muted);
+        margin-top: 8px;
+        max-width: 70ch;
+      }
+
+      .panel {
+        border: 1px solid var(--panel-border);
+        background: var(--panel);
+        backdrop-filter: blur(8px);
+        border-radius: 18px;
+        padding: clamp(16px, 4vw, 28px);
+        box-shadow: 0 16px 45px #00000044;
+        animation: reveal 0.35s ease;
+      }
+
+      .panel + .panel {
+        margin-top: 14px;
+      }
+
+      label {
+        display: block;
+        margin-top: 16px;
+        margin-bottom: 6px;
+        color: var(--muted);
+      }
+
+      select {
+        width: 100%;
+        max-width: 320px;
+        border: 1px solid #ffffff38;
+        border-radius: 12px;
+        padding: 12px;
+        background: #0c1820;
+        color: var(--text);
+        font-size: 1rem;
+      }
+
+      .cta {
+        margin-top: 16px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(120deg, #f25f5c, #f28482);
+        color: #fff;
+        font-size: 1rem;
+        padding: 12px 18px;
+        cursor: pointer;
+        transition:
+          transform 0.2s ease,
+          filter 0.2s ease;
+      }
+
+      .cta:hover {
+        transform: translateY(-2px);
+        filter: saturate(1.05);
+      }
+
+      .hud-mini {
+        margin-top: 14px;
+        display: flex;
+        gap: 6px;
+        color: var(--muted);
+      }
+
+      .quiz-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .category {
+        border: 1px solid #ffffff44;
+        border-radius: 999px;
+        padding: 4px 12px;
+        color: var(--accent);
+      }
+
+      .progress-text {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .progress-track {
+        height: 9px;
+        background: #ffffff1f;
+        border-radius: 999px;
+        margin-top: 14px;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #7bd389, #90e0ef);
+        transition: width 0.25s ease;
+      }
+
+      #question-text {
+        margin-top: 14px;
+        line-height: 1.35;
+      }
+
+      .options {
+        margin-top: 14px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .option-btn {
+        text-align: left;
+        border: 1px solid #ffffff3a;
+        border-radius: 12px;
+        background: #0b1922;
+        color: var(--text);
+        padding: 12px;
+        cursor: pointer;
+        transition:
+          transform 0.18s ease,
+          border-color 0.2s ease,
+          background 0.2s ease;
+      }
+
+      .option-btn:hover {
+        transform: translateX(3px);
+        border-color: #ffffff77;
+      }
+
+      .option-btn.correct {
+        border-color: #7bd389;
+        background: #194d2b;
+      }
+
+      .option-btn.wrong {
+        border-color: #ff7f7f;
+        background: #5a2020;
+      }
+
+      .option-btn:disabled {
+        cursor: default;
+      }
+
+      .feedback {
+        margin-top: 12px;
+        min-height: 24px;
+        color: var(--muted);
+      }
+
+      .quiz-bottom {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .score-box {
+        display: flex;
+        gap: 6px;
+        color: var(--muted);
+      }
+
+      .final-score {
+        margin-top: 8px;
+        font-size: 1.4rem;
+        color: var(--accent);
+      }
+
+      #accuracy {
+        margin-top: 6px;
+        color: var(--muted);
+      }
+
+      .mistakes-wrap {
+        margin-top: 16px;
+        border-top: 1px solid #ffffff2a;
+        padding-top: 12px;
+      }
+
+      #mistakes-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 8px;
+        color: var(--muted);
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .spark {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ffd166;
+        pointer-events: none;
+        animation: burst 700ms ease forwards;
+      }
+
+      @keyframes reveal {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes burst {
+        to {
+          transform: translate(var(--x), var(--y)) scale(0);
+          opacity: 0;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .quiz-top,
+        .quiz-bottom {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .cta {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <main class="app" aria-live="polite">
+      <header class="hero">
+        <p class="hero-kicker">Treinamento de resposta rapida</p>
+        <h1>Quiz Brigada: Revisao Monstra</h1>
+        <p class="hero-subtitle">
+          Treine ate virar craque em primeiros socorros e combate inicial ao
+          incendio.
+        </p>
+      </header>
+
+      <section id="start-screen" class="panel">
+        <h2>Modo de treino</h2>
+        <p>Escolha o numero de perguntas e bora dominar o manual.</p>
+
+        <label for="question-count">Quantidade de perguntas</label>
+        <select id="question-count" aria-label="Quantidade de perguntas">
+          <option value="10">10 perguntas</option>
+          <option value="20" selected>20 perguntas</option>
+          <option value="35">35 perguntas</option>
+          <option value="all">Todas as perguntas</option>
+        </select>
+
+        <button id="start-btn" class="cta">Iniciar treino</button>
+
+        <div class="hud-mini">
+          <span>Recorde:</span>
+          <strong id="best-score">0%</strong>
+        </div>
+      </section>
+
+      <section id="quiz-screen" class="panel hidden">
+        <div class="quiz-top">
+          <div class="category" id="category-tag">Categoria</div>
+          <div class="progress-text" id="progress-text">Pergunta 1 de 20</div>
+        </div>
+
+        <div
+          class="progress-track"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <h2 id="question-text">Pergunta</h2>
+
+        <div id="options" class="options"></div>
+
+        <div id="feedback" class="feedback"></div>
+
+        <div class="quiz-bottom">
+          <div class="score-box">
+            <span>Pontos:</span>
+            <strong id="score">0</strong>
+          </div>
+          <button id="next-btn" class="cta hidden">Proxima</button>
+        </div>
+      </section>
+
+      <section id="result-screen" class="panel hidden">
+        <h2>Resultado final</h2>
+        <p id="final-message">Seu resultado</p>
+        <p id="final-score" class="final-score">0/0</p>
+        <p id="accuracy">Aproveitamento: 0%</p>
+
+        <div id="mistakes-wrap" class="mistakes-wrap hidden">
+          <h3>Revisar erros</h3>
+          <ul id="mistakes-list"></ul>
+        </div>
+
+        <button id="restart-btn" class="cta">Treinar de novo</button>
+      </section>
+    </main>
+
+    <script>
+      const questionBank = [
+        {
+          category: "Convulsao",
+          question: "Qual e a primeira acao em uma convulsao?",
+          options: [
+            "Dar agua para acalmar",
+            "Lateralizar a vitima",
+            "Colocar um objeto na boca",
+            "Imobilizar bruscamente",
+          ],
+          answer: 1,
+          explanation: "A posicao lateral de seguranca protege as vias aereas.",
+        },
+        {
+          category: "Convulsao",
+          question: "Por que lateralizar a vitima e tao importante?",
+          options: [
+            "Para acordar mais rapido",
+            "Para evitar aspiracao e manter vias aereas livres",
+            "Para reduzir febre",
+            "Para medir o pulso com mais facilidade",
+          ],
+          answer: 1,
+          explanation:
+            "Lateralizar reduz risco de aspiracao de saliva e vomito.",
+        },
+        {
+          category: "Convulsao",
+          question: "Durante os espasmos da convulsao, deve segurar a vitima?",
+          options: [
+            "Sim, com forca para parar os movimentos",
+            "Nao, apenas proteger contra impactos",
+            "Sim, segurando os bracos para tras",
+            "Nao, mas colocar colher na boca",
+          ],
+          answer: 1,
+          explanation:
+            "Nao se deve conter durante espasmos; apenas evitar traumas.",
+        },
+        {
+          category: "Convulsao",
+          question: "O que nunca deve ser feito em uma convulsao?",
+          options: [
+            "Proteger a cabeca",
+            "Lateralizar apos os espasmos",
+            "Colocar algo na boca ou tentar segurar a lingua",
+            "Afastar objetos perigosos",
+          ],
+          answer: 2,
+          explanation: "Nada deve ser colocado na boca da vitima.",
+        },
+        {
+          category: "Engasgo",
+          question: "Quais sao sinais classicos de engasgo grave?",
+          options: [
+            "Tosse produtiva e febre",
+            "Nao falar, maos no pescoco e cianose",
+            "Dor lombar e tontura",
+            "Sonolencia e suor frio apenas",
+          ],
+          answer: 1,
+          explanation:
+            "Sem fala + gesto no pescoco + cianose indicam obstrucao grave.",
+        },
+        {
+          category: "Engasgo",
+          question: "Qual manobra usar em adulto consciente com engasgo grave?",
+          options: [
+            "RCP",
+            "Manobra de Heimlich",
+            "Torniquete",
+            "Ventilacao boca a boca",
+          ],
+          answer: 1,
+          explanation: "A manobra de Heimlich e indicada em adulto consciente.",
+        },
+        {
+          category: "Engasgo",
+          question: "Onde posicionar as maos na manobra de Heimlich?",
+          options: [
+            "No centro do peito",
+            "No pescoco",
+            "Um punho acima do umbigo e outra mao por cima",
+            "Abaixo do umbigo",
+          ],
+          answer: 2,
+          explanation:
+            "O ponto correto e acima do umbigo, com apoio da outra mao.",
+        },
+        {
+          category: "Engasgo",
+          question: "Qual e o movimento correto na manobra de Heimlich?",
+          options: [
+            "Para baixo e para fora",
+            "Para dentro e para cima, em formato J",
+            "Apenas lateral",
+            "Circular e continuo",
+          ],
+          answer: 1,
+          explanation: "As compressoes sao para dentro e para cima.",
+        },
+        {
+          category: "Engasgo",
+          question: "Se a vitima de engasgo desmaiar, o que fazer?",
+          options: [
+            "Esperar recuperar consciencia",
+            "Oferecer agua",
+            "Iniciar RCP imediatamente",
+            "Fazer compressa fria",
+          ],
+          answer: 2,
+          explanation: "Com desmaio, deve-se iniciar RCP sem demora.",
+        },
+        {
+          category: "PCR",
+          question: "Como verificar o pulso conforme o manual da brigada?",
+          options: [
+            "Pulso radial com o polegar",
+            "Jugular no pescoco com dedos indicador e anelar",
+            "No tornozelo por 20 segundos",
+            "No punho por 30 segundos",
+          ],
+          answer: 1,
+          explanation:
+            "A referencia do manual destaca pulso jugular no pescoco.",
+        },
+        {
+          category: "PCR",
+          question: "Qual o tempo maximo para checar pulso?",
+          options: ["5 segundos", "10 segundos", "20 segundos", "30 segundos"],
+          answer: 1,
+          explanation: "A verificacao deve levar no maximo 10 segundos.",
+        },
+        {
+          category: "PCR",
+          question: "Sem pulso e sem respiracao: qual conduta?",
+          options: [
+            "Aguardar socorro sem intervir",
+            "Aplicar Heimlich",
+            "Iniciar RCP imediatamente",
+            "Dar agua e acalmar",
+          ],
+          answer: 2,
+          explanation: "Ausencia de pulso e respiracao exige RCP imediata.",
+        },
+        {
+          category: "PCR",
+          question: "Qual a frequencia ideal das compressoes na RCP?",
+          options: [
+            "60 a 80/min",
+            "80 a 100/min",
+            "100 a 120/min",
+            "130 a 150/min",
+          ],
+          answer: 2,
+          explanation:
+            "A faixa recomendada e 100 a 120 compressoes por minuto.",
+        },
+        {
+          category: "PCR",
+          question: "Qual referencia pratica de ritmo foi citada no manual?",
+          options: [
+            "Asa Branca e Evidencias",
+            "Stayin Alive e Baby Shark",
+            "Hino Nacional e Parabens",
+            "Samba de Uma Nota So e Garota de Ipanema",
+          ],
+          answer: 1,
+          explanation: "As musicas ajudam a manter cadencia de compressao.",
+        },
+        {
+          category: "PCR",
+          question: "Qual profundidade da compressao em adulto?",
+          options: ["2 a 3 cm", "3 a 4 cm", "5 a 6 cm", "7 a 8 cm"],
+          answer: 2,
+          explanation: "A profundidade alvo no adulto e de 5 a 6 cm.",
+        },
+        {
+          category: "PCR",
+          question: "Onde realizar as compressoes toracicas?",
+          options: [
+            "Lado esquerdo do peito",
+            "Centro do peito (esterno)",
+            "Abaixo das costelas",
+            "No abdome superior",
+          ],
+          answer: 1,
+          explanation:
+            "As compressoes devem ser no centro do peito, sobre o esterno.",
+        },
+        {
+          category: "PCR",
+          question: "A cada quanto tempo reavaliar a vitima em RCP?",
+          options: [
+            "A cada 30 segundos",
+            "A cada 1 minuto",
+            "A cada 2 minutos",
+            "A cada 5 minutos",
+          ],
+          answer: 2,
+          explanation: "A reavaliacao e feita a cada 2 minutos.",
+        },
+        {
+          category: "PCR",
+          question: "Quando parar a RCP?",
+          options: [
+            "Quando cansar um pouco",
+            "Somente com retorno do pulso, exaustao total ou chegada do socorro",
+            "Depois de 1 minuto sem resposta",
+            "Assim que a ambulancia for acionada",
+          ],
+          answer: 1,
+          explanation: "Esses sao os criterios seguros para interromper RCP.",
+        },
+        {
+          category: "Infarto",
+          question: "Qual e o sintoma mais comum do infarto (IAM)?",
+          options: [
+            "Dor no peito em pressao/aperto",
+            "Coceira intensa",
+            "Dor no joelho",
+            "Febre alta",
+          ],
+          answer: 0,
+          explanation: "Dor toracica em aperto e o sinal mais comum do IAM.",
+        },
+        {
+          category: "Infarto",
+          question: "Quais sinais podem acompanhar o infarto?",
+          options: [
+            "Suor frio, nausea, falta de ar e palidez",
+            "Somente dor de garganta",
+            "Somente febre e tosse",
+            "Apenas dor abdominal leve",
+          ],
+          answer: 0,
+          explanation: "Esses sinais aumentam a suspeita de IAM.",
+        },
+        {
+          category: "Infarto",
+          question: "Qual conduta imediata em suspeita de infarto?",
+          options: [
+            "Fazer a pessoa caminhar",
+            "Manter calma, posicao confortavel e ligar 192",
+            "Dar cafe forte",
+            "Dar alimento energetico",
+          ],
+          answer: 1,
+          explanation: "Conforto e acionamento rapido do 192 sao essenciais.",
+        },
+        {
+          category: "Infarto",
+          question: "Pode oferecer agua ou comida para suspeita de IAM?",
+          options: [
+            "Sim, para hidratar",
+            "Somente agua",
+            "Nao",
+            "Somente se a dor passar",
+          ],
+          answer: 2,
+          explanation: "Nao oferecer agua ou comida nessa situacao.",
+        },
+        {
+          category: "Hemorragia",
+          question: "Qual e a primeira acao em uma hemorragia externa?",
+          options: [
+            "Lavar com agua corrente",
+            "Pressao direta no local",
+            "Aplicar gelo por 10 minutos",
+            "Usar torniquete imediatamente",
+          ],
+          answer: 1,
+          explanation: "A pressao direta e a conduta inicial padrao.",
+        },
+        {
+          category: "Hemorragia",
+          question: "Quando usar torniquete?",
+          options: [
+            "Em qualquer corte pequeno",
+            "Somente se sangramento grave nao parar",
+            "Apenas em queimaduras",
+            "Sempre em ferimentos de mao",
+          ],
+          answer: 1,
+          explanation:
+            "Torniquete e recurso para sangramento grave refratario.",
+        },
+        {
+          category: "Hemorragia",
+          question: "Onde posicionar o torniquete?",
+          options: [
+            "5 cm acima do ferimento (ou 3 dedos)",
+            "Sobre o ferimento",
+            "10 cm abaixo do ferimento",
+            "Na articulacao mais proxima",
+          ],
+          answer: 0,
+          explanation: "A regra pratica e posicionar acima do ferimento.",
+        },
+        {
+          category: "Hemorragia",
+          question: "Pode colocar torniquete sobre articulacao?",
+          options: [
+            "Pode, se apertar muito",
+            "Nao, sempre acima",
+            "Pode em joelho",
+            "So em cotovelo",
+          ],
+          answer: 1,
+          explanation: "Nunca em articulacao; aplicar acima dela.",
+        },
+        {
+          category: "Hemorragia",
+          question: "Qual informacao e obrigatoria ao usar torniquete?",
+          options: [
+            "Tipo sanguineo",
+            "Horario de aplicacao",
+            "Peso da vitima",
+            "Ultima refeicao",
+          ],
+          answer: 1,
+          explanation:
+            "Anotar o horario e obrigatorio para orientar o atendimento.",
+        },
+        {
+          category: "Extintores",
+          question: "Classe A de incendio envolve quais materiais?",
+          options: [
+            "Metais piroforicos",
+            "Sólidos como papel, madeira e tecido",
+            "Gas de cozinha",
+            "Equipamentos eletricos energizados",
+          ],
+          answer: 1,
+          explanation: "Classe A cobre solidos combustiveis comuns.",
+        },
+        {
+          category: "Extintores",
+          question: "Classe B de incendio envolve: ",
+          options: [
+            "Sólidos secos",
+            "Liquidos inflamaveis",
+            "Eletricos energizados",
+            "Materiais nucleares",
+          ],
+          answer: 1,
+          explanation: "Classe B corresponde a liquidos inflamaveis.",
+        },
+        {
+          category: "Extintores",
+          question: "Classe C de incendio envolve: ",
+          options: [
+            "Residuos hospitalares",
+            "Eletricos energizados",
+            "Sementes e graos",
+            "Madeira e papel",
+          ],
+          answer: 1,
+          explanation: "Classe C e para equipamentos eletricos energizados.",
+        },
+        {
+          category: "Extintores",
+          question: "Qual extintor e considerado mais versatil?",
+          options: ["Classe A", "Classe B", "Classe C", "ABC"],
+          answer: 3,
+          explanation: "O extintor ABC cobre multiplas classes comuns.",
+        },
+        {
+          category: "Extintores",
+          question: "Ao combater um foco de incendio, onde mirar o jato?",
+          options: [
+            "Na fumaça",
+            "No topo das chamas",
+            "Na base do fogo",
+            "No teto",
+          ],
+          answer: 2,
+          explanation: "Mirar na base remove o combustivel em combustao.",
+        },
+        {
+          category: "Extintores",
+          question: "Qual movimento correto com o extintor?",
+          options: [
+            "Circular para cima",
+            "Golpes verticais",
+            "Varredura lateral",
+            "Movimento aleatorio",
+          ],
+          answer: 2,
+          explanation: "A varredura lateral aumenta cobertura e eficacia.",
+        },
+        {
+          category: "Extintores",
+          question: "O que verificar antes de usar o extintor?",
+          options: [
+            "Data de nascimento do operador",
+            "Manometro na faixa verde",
+            "Peso do cilindro apenas",
+            "Cor da mangueira",
+          ],
+          answer: 1,
+          explanation: "O manometro em faixa verde indica pressao adequada.",
+        },
+        {
+          category: "Extintores",
+          question: "Pode reutilizar extintor apos uso, mesmo pouco?",
+          options: [
+            "Sim",
+            "Nao",
+            "Somente em treino",
+            "Somente com autorizacao verbal",
+          ],
+          answer: 1,
+          explanation: "Extintor usado deve ser recarregado; nao se reutiliza.",
+        },
+      ];
+
+      const startScreen = document.getElementById("start-screen");
+      const quizScreen = document.getElementById("quiz-screen");
+      const resultScreen = document.getElementById("result-screen");
+
+      const questionCountSelect = document.getElementById("question-count");
+      const bestScoreEl = document.getElementById("best-score");
+      const startBtn = document.getElementById("start-btn");
+      const nextBtn = document.getElementById("next-btn");
+      const restartBtn = document.getElementById("restart-btn");
+
+      const categoryTag = document.getElementById("category-tag");
+      const progressText = document.getElementById("progress-text");
+      const progressBar = document.getElementById("progress-bar");
+      const questionText = document.getElementById("question-text");
+      const optionsEl = document.getElementById("options");
+      const feedbackEl = document.getElementById("feedback");
+      const scoreEl = document.getElementById("score");
+
+      const finalMessage = document.getElementById("final-message");
+      const finalScore = document.getElementById("final-score");
+      const accuracyEl = document.getElementById("accuracy");
+      const mistakesWrap = document.getElementById("mistakes-wrap");
+      const mistakesList = document.getElementById("mistakes-list");
+
+      let activeQuestions = [];
+      let currentQuestionIndex = 0;
+      let score = 0;
+      let answered = false;
+      let streak = 0;
+      let mistakes = [];
+
+      function shuffle(list) {
+        const arr = [...list];
+        for (let i = arr.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      function getQuestionAmount() {
+        const value = questionCountSelect.value;
+        if (value === "all") {
+          return questionBank.length;
+        }
+        return Number(value);
+      }
+
+      function showBestScore() {
+        const best = Number(localStorage.getItem("quiz-brigada-best") || 0);
+        bestScoreEl.textContent = `${best}%`;
+      }
+
+      function startQuiz() {
+        const amount = getQuestionAmount();
+        activeQuestions = shuffle(questionBank).slice(0, amount);
+        currentQuestionIndex = 0;
+        score = 0;
+        streak = 0;
+        mistakes = [];
+        answered = false;
+
+        scoreEl.textContent = "0";
+        feedbackEl.textContent = "";
+        nextBtn.classList.add("hidden");
+
+        startScreen.classList.add("hidden");
+        resultScreen.classList.add("hidden");
+        quizScreen.classList.remove("hidden");
+
+        renderQuestion();
+      }
+
+      function updateProgress() {
+        const total = activeQuestions.length;
+        const current = currentQuestionIndex + 1;
+        const pct = Math.round((currentQuestionIndex / total) * 100);
+
+        progressText.textContent = `Pergunta ${current} de ${total}`;
+        progressBar.style.width = `${pct}%`;
+      }
+
+      function renderQuestion() {
+        answered = false;
+        feedbackEl.textContent = "";
+        nextBtn.classList.add("hidden");
+        optionsEl.innerHTML = "";
+
+        const q = activeQuestions[currentQuestionIndex];
+        categoryTag.textContent = q.category;
+        questionText.textContent = q.question;
+
+        q.options.forEach((optionText, index) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "option-btn";
+          btn.textContent = `${index + 1}. ${optionText}`;
+          btn.addEventListener("click", () => handleAnswer(index));
+          optionsEl.appendChild(btn);
+        });
+
+        updateProgress();
+      }
+
+      function spawnSparks() {
+        for (let i = 0; i < 12; i += 1) {
+          const el = document.createElement("span");
+          el.className = "spark";
+          el.style.left = `${window.innerWidth * 0.5}px`;
+          el.style.top = `${window.innerHeight * 0.25}px`;
+          el.style.setProperty("--x", `${Math.random() * 220 - 110}px`);
+          el.style.setProperty("--y", `${Math.random() * 120 - 60}px`);
+          document.body.appendChild(el);
+          setTimeout(() => el.remove(), 700);
+        }
+      }
+
+      function handleAnswer(selectedIndex) {
+        if (answered) {
+          return;
+        }
+
+        answered = true;
+        const q = activeQuestions[currentQuestionIndex];
+        const buttons = Array.from(document.querySelectorAll(".option-btn"));
+
+        buttons.forEach((btn) => {
+          btn.disabled = true;
+        });
+
+        const isCorrect = selectedIndex === q.answer;
+        if (isCorrect) {
+          score += 1;
+          streak += 1;
+          scoreEl.textContent = String(score);
+          buttons[selectedIndex].classList.add("correct");
+          feedbackEl.textContent = `Acertou. ${q.explanation}`;
+          if (streak >= 2) {
+            spawnSparks();
+          }
+        } else {
+          streak = 0;
+          buttons[selectedIndex].classList.add("wrong");
+          buttons[q.answer].classList.add("correct");
+          feedbackEl.textContent = `Resposta correta: ${q.options[q.answer]}. ${q.explanation}`;
+          mistakes.push({
+            question: q.question,
+            correct: q.options[q.answer],
+            chosen: q.options[selectedIndex],
+          });
+        }
+
+        nextBtn.classList.remove("hidden");
+      }
+
+      function getFinalLabel(accuracy) {
+        if (accuracy >= 90) {
+          return "NIVEL CRAQUE: brigadista de respeito.";
+        }
+        if (accuracy >= 75) {
+          return "NIVEL BRABO: so ajustar detalhes para elite.";
+        }
+        if (accuracy >= 55) {
+          return "NIVEL EM EVOLUCAO: mais um treino e sobe muito.";
+        }
+        return "NIVEL BASE: revisa o manual e tenta de novo.";
+      }
+
+      function finishQuiz() {
+        const total = activeQuestions.length;
+        const accuracy = Math.round((score / total) * 100);
+
+        finalMessage.textContent = getFinalLabel(accuracy);
+        finalScore.textContent = `${score}/${total}`;
+        accuracyEl.textContent = `Aproveitamento: ${accuracy}%`;
+
+        const currentBest = Number(
+          localStorage.getItem("quiz-brigada-best") || 0,
+        );
+        if (accuracy > currentBest) {
+          localStorage.setItem("quiz-brigada-best", String(accuracy));
+        }
+        showBestScore();
+
+        mistakesList.innerHTML = "";
+        if (mistakes.length > 0) {
+          mistakesWrap.classList.remove("hidden");
+          mistakes.forEach((item) => {
+            const li = document.createElement("li");
+            li.textContent = `${item.question} | voce marcou: ${item.chosen} | correto: ${item.correct}`;
+            mistakesList.appendChild(li);
+          });
+        } else {
+          mistakesWrap.classList.add("hidden");
+        }
+
+        quizScreen.classList.add("hidden");
+        resultScreen.classList.remove("hidden");
+      }
+
+      function goNext() {
+        if (!answered) {
+          return;
+        }
+
+        currentQuestionIndex += 1;
+        if (currentQuestionIndex >= activeQuestions.length) {
+          progressBar.style.width = "100%";
+          finishQuiz();
+          return;
+        }
+
+        renderQuestion();
+      }
+
+      function handleKeyboard(event) {
+        if (quizScreen.classList.contains("hidden")) {
+          return;
+        }
+
+        const numberPressed = Number(event.key);
+        if (numberPressed >= 1 && numberPressed <= 4) {
+          const index = numberPressed - 1;
+          const button = document.querySelectorAll(".option-btn")[index];
+          if (button && !button.disabled) {
+            button.click();
+          }
+        }
+
+        if (event.key === "Enter" && !nextBtn.classList.contains("hidden")) {
+          goNext();
+        }
+      }
+
+      startBtn.addEventListener("click", startQuiz);
+      nextBtn.addEventListener("click", goNext);
+      restartBtn.addEventListener("click", () => {
+        resultScreen.classList.add("hidden");
+        startScreen.classList.remove("hidden");
+      });
+      document.addEventListener("keydown", handleKeyboard);
+
+      showBestScore();
+    </script>
+  </body>
+</html>
